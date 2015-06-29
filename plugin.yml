@@ -1,0 +1,17 @@
+name: SpellBook
+main: io.github.harryprotist.SpellBook
+version: 0.01
+commands:
+ setmana:
+  description: set mana
+ cast:
+  description: cast a spell
+
+permissions:
+ spellbook.*:
+  spellbook.setmana: true
+  default: op
+ spellbook.setmana:
+  default: op
+ spellbook.cast:
+  default: true
