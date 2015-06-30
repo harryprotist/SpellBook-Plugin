@@ -62,7 +62,8 @@ public abstract class SpellFunction {
     }
     public int run(Stack<SpellObject> stack, SpellContext con)
     throws Exception {
-      return spell.run(con).mana;
+      stack.push(new SpellObject.SpSpell(spell));
+      return 1;
     }
   }
 
@@ -89,8 +90,8 @@ public abstract class SpellFunction {
   public static class Add extends SpellFunction {
     public int run(Stack<SpellObject> stack, SpellContext con)
     throws Exception {
-      SpellObject so1 = stack.pop();
       SpellObject so2 = stack.pop();
+      SpellObject so1 = stack.pop();
       System.out.println(so1.getValue() == null);
       if (so1.getType() == SpellObject.Type.NUMBER &&
           so2.getType() == SpellObject.Type.NUMBER) {
@@ -162,7 +163,7 @@ public abstract class SpellFunction {
 
         Location pLoc = con.player.getLocation();   
         pLoc.add(0.0, 1.6, 0.0);
-        pLoc.add(con.player.getLocation().getDirection().normalize());
+        pLoc.add(con.player.getLocation().getDirection());
 
         Location tLoc = ((Location)(loc.getValue())).clone();
         tLoc.add(0.5, 0.5, 0.5);
@@ -187,4 +188,35 @@ public abstract class SpellFunction {
       }
     }
   }
+
+  @SpellFun(name = "if")
+  public static class If extends SpellFunction {
+    public int run(Stack<SpellObject> stack, SpellContext con)
+    throws Exception {
+      SpellObject code = stack.pop();
+      SpellObject expr = stack.pop();
+
+      if (code.getType() == SpellObject.Type.SPELL &&
+      expr.getType() == SpellObject.Type.NUMBER &&
+      (Double)(expr.getValue()) != 0.0) {
+        return ((Spell)(code.getValue())).run(stack, con).mana
+      }
+      return 1;
+    }
+  }
+
+  @SpellFun(name = "equals")
+  public static class Equals extends SpellFunction {
+    public int run(Stack<SpellObject> stack, SpellContext con)
+    throws Exception {
+      SpellObject so2 = stack.pop();
+      SpellObject so1 = stack.pop();
+      if (so1.getValue().equals(so2.getValue())) {
+        stack.push(new SpellObject.SpNumber(1.0));
+      } else {
+        stack.push(new SpellObject.SpNumber(0.0));
+      }
+      return 1;
+    }
+  } 
 }

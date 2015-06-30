@@ -3,6 +3,7 @@ package io.github.harryprotist;
 import io.github.harryprotist.*;
 import io.github.harryprotist.spellfunction.*;
 import io.github.harryprotist.Util;
+import io.github.harryprotist.Casting;
 
 import org.bukkit.*;
 import org.bukkit.plugin.java.JavaPlugin;
@@ -11,6 +12,8 @@ import org.bukkit.command.CommandSender;
 import org.bukkit.entity.Player;
 import org.bukkit.inventory.PlayerInventory;
 import org.bukkit.inventory.ItemStack;
+import org.bukkit.inventory.meta.ItemMeta;
+import org.bukkit.inventory.meta.BookMeta;
 import org.bukkit.metadata.MetadataValue;
 import org.bukkit.metadata.FixedMetadataValue;
 import org.bukkit.inventory.meta.BookMeta;
@@ -26,8 +29,11 @@ import java.io.*;
 
 public final class SpellBook extends JavaPlugin implements Listener {
 
+  private Casting casting;
+
 	public void onEnable () {
 		getLogger().info("Started SpellBook");
+    casting = new Casting(this);
 		getServer().getPluginManager().registerEvents(this, this);
 	}
 	
@@ -42,6 +48,7 @@ public final class SpellBook extends JavaPlugin implements Listener {
 	public void onWorldSave(WorldSaveEvent event) {
 	}
   */
+
 
 	public void onDisable () {
 		getLogger().info("Stopping SpellBook");
@@ -70,24 +77,7 @@ public final class SpellBook extends JavaPlugin implements Listener {
     sender instanceof Player &&
     sender.hasPermission("spellbook.cast")
     ) {
-
-      Player player = (Player)sender;
-      ItemStack item = player.getItemInHand();
-      
-      if (item.getAmount() == 1 &&
-      (item.getType() == Material.BOOK_AND_QUILL ||
-      item.getType() == Material.WRITTEN_BOOK)
-      ) {
-        try { 
-          Book.parse(
-            Util.join("", (((BookMeta)item.getItemMeta()).getPages()))
-          ).run(
-            new SpellContext(this, player)
-          );
-        } catch (Exception e) {
-          player.sendMessage("Error: " + e.getMessage());
-        }
-      }
+      casting.activateSpell((Player)sender);
     }
     return false;
 	}

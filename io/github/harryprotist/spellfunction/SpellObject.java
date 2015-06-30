@@ -7,7 +7,7 @@ public abstract class SpellObject {
   public enum Type {
     NUMBER,
     STRING,
-    FUNCTION,
+    SPELL,
     LOCATION 
   }
 
@@ -47,6 +47,16 @@ public abstract class SpellObject {
 
     public Object value;
     public SpLocation(Location val) {
+      this.value = (Object)val; 
+    }
+  }
+
+  public static class SpSpell extends SpellObject {
+    public Type getType() { return Type.SPELL; }
+    public Object getValue() { return this.value; }
+
+    public Object value;
+    public SpSpell(Spell val) {
       this.value = (Object)val; 
     }
   }

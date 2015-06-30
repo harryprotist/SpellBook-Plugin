@@ -19,9 +19,11 @@ public class Spell {
   public static class SpellReturn {
     public ReturnType type;
     public int mana;
-    public SpellReturn(ReturnType type, int mana) {
+    public Stack<SpellObject> stack;
+    public SpellReturn(ReturnType type, int mana, Stack<SpellObject> stack) {
       this.type = type;
       this.mana = mana;
+      this.stack = stack;
     }
   }
 
@@ -46,7 +48,7 @@ public class Spell {
       con.player.sendMessage("Error: " + e.getMessage());
       return new SpellReturn(ReturnType.ERROR, mana);
     }
-    return new SpellReturn(ReturnType.END, mana);
+    return new SpellReturn(ReturnType.END, mana, stack);
   }
 
 }
