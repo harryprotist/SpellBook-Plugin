@@ -22,7 +22,7 @@ public class SpellContext {
   public SpellContext(SpellBook plugin, Player player, Stack<SpellObject> stack) {
     this.plugin = plugin;
     this.player = player;
-    this.mana = (Integer)plugin.getMeta(player, "mana");
+    this.mana = (Integer)(plugin.getMeta(player, "mana"));
     this.stack = (stack == null)? (new Stack<SpellObject>()):(stack);
   }
 }

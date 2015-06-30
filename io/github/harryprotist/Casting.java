@@ -51,10 +51,13 @@ public class Casting implements Listener {
       String code = pages.replaceAll("^\\[Spell Book\\]", "");
       if (pages.equals(code)) return;
 
-      try { 
-        Book.parse(code).run(new SpellContext(plugin, player));
+      try {
+        int cost = Book.parse(code).run(new SpellContext(plugin, player)).mana;
+        plugin.setMeta(player, "mana",
+          new Integer((Integer)(plugin.getMeta(player, "mana")) - cost)
+        );
       } catch (Exception e) {
-        player.sendMessage("Error: " + e.getMessage());
+        player.sendMessage("Parse Error: " + e.getMessage());
       }
     }
   }
