@@ -22,8 +22,8 @@ public class Book {
       return (SpellFunction.getFunction(code));
 
     /* numbers start with digits (obviously) */
-    } else if (Pattern.matches("^\\.?\\d.*", code)) {
-      return (new SpellFunction.SfNumber(new Double("0" + code)));
+    } else if (Pattern.matches("^\\d.*", code)) {
+      return (new SpellFunction.SfNumber(new Integer("0" + code)));
 
     /* strings start with quotes */
     } else if (Pattern.matches("^\".*", code)) {

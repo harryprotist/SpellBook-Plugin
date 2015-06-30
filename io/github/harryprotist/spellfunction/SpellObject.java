@@ -1,5 +1,7 @@
 package io.github.harryprotist.spellfunction;
 
+import io.github.harryprotist.Spell;
+
 import org.bukkit.Location;
 
 public abstract class SpellObject {
@@ -24,7 +26,7 @@ public abstract class SpellObject {
     public Object getValue() { return this.value; }
 
     public Object value;
-    public SpNumber(Double val) {
+    public SpNumber(Integer val) {
       this.value = (Object)val;
     } 
   }

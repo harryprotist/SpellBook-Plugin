@@ -34,8 +34,8 @@ public abstract class SpellFunction {
   public abstract int run(Stack<SpellObject> stack, SpellContext con) throws Exception;
 
   public static class SfNumber extends SpellFunction {
-    private Double num;
-    public SfNumber(Double num) {
+    private Integer num;
+    public SfNumber(Integer num) {
       this.num = num;
     }
     public int run(Stack<SpellObject> stack, SpellContext con) 
@@ -95,7 +95,9 @@ public abstract class SpellFunction {
       System.out.println(so1.getValue() == null);
       if (so1.getType() == SpellObject.Type.NUMBER &&
           so2.getType() == SpellObject.Type.NUMBER) {
-        stack.push(new SpellObject.SpNumber((Double)so1.getValue() + (Double)so2.getValue()));
+        stack.push(new SpellObject.SpNumber(
+          (Integer)so1.getValue() + (Integer)so2.getValue())
+        );
       } else if (so1.getType() == SpellObject.Type.STRING &&
                  so2.getType() == SpellObject.Type.STRING) {
         stack.push(new SpellObject.SpString((String)so1.getValue() + (String)so2.getValue()));
@@ -112,7 +114,7 @@ public abstract class SpellFunction {
     throws Exception {
       SpellObject so = stack.pop();
       if (so.getType() == SpellObject.Type.NUMBER) {
-        stack.push(new SpellObject.SpNumber((Double)so.getValue() * (-1.0)));
+        stack.push(new SpellObject.SpNumber((Integer)so.getValue() * (-1)));
       } else {
         throw new Exception("Neg: Improper type"); 
       }
@@ -142,10 +144,10 @@ public abstract class SpellFunction {
         stack.push( new SpellObject.SpLocation(
           con.player.getTargetBlock(
             transparent,
-            ((Double)so.getValue()).intValue()
+            ((Integer)so.getValue())
           ).getLocation()
         ));
-        return (new Double((Double)(so.getValue()) / 10.0)).intValue() + 1;
+        return ((Integer)so.getValue() / 10) + 1;
       } else {
         throw new Exception("Target: Improper type");
       }
@@ -179,10 +181,10 @@ public abstract class SpellFunction {
         con.player.getWorld().spawnArrow(
           pLoc,
           dir,
-          (float)((Double)pow.getValue()).doubleValue(),
+          (float)((Integer)pow.getValue() / 10),
           spread
         );
-        return (new Double(64.0 + (Double)pow.getValue())).intValue();
+        return (64 + (Integer)pow.getValue());
       } else {
         throw new Exception("Arrow: Improper types");          
       }
@@ -198,8 +200,9 @@ public abstract class SpellFunction {
 
       if (code.getType() == SpellObject.Type.SPELL &&
       expr.getType() == SpellObject.Type.NUMBER &&
-      (Double)(expr.getValue()) != 0.0) {
-        return ((Spell)(code.getValue())).run(stack, con).mana
+      (Integer)(expr.getValue()) != 0) {
+        con.stack = stack;
+        return ((Spell)(code.getValue())).run(con).mana;
       }
       return 1;
     }
@@ -212,9 +215,9 @@ public abstract class SpellFunction {
       SpellObject so2 = stack.pop();
       SpellObject so1 = stack.pop();
       if (so1.getValue().equals(so2.getValue())) {
-        stack.push(new SpellObject.SpNumber(1.0));
+        stack.push(new SpellObject.SpNumber(1));
       } else {
-        stack.push(new SpellObject.SpNumber(0.0));
+        stack.push(new SpellObject.SpNumber(0));
       }
       return 1;
     }
