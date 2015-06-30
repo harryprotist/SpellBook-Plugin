@@ -12,15 +12,17 @@ import java.util.Stack;
 public class SpellContext {
 
   public Player player; 
-  public Plugin plugin;
+  public SpellBook plugin;
   public Stack<SpellObject> stack;
+  public int mana;
 
-  public SpellContext(Plugin plugin, Player player) {
+  public SpellContext(SpellBook plugin, Player player) {
     this(plugin, player, null);
   }
-  public SpellContext(Plugin plugin, Player player, Stack<SpellObject> stack) {
+  public SpellContext(SpellBook plugin, Player player, Stack<SpellObject> stack) {
     this.plugin = plugin;
     this.player = player;
+    this.mana = (Integer)plugin.getMeta(player, "mana");
     this.stack = (stack == null)? (new Stack<SpellObject>()):(stack);
   }
 }

@@ -41,6 +41,10 @@ public class Spell {
           return new SpellReturn(ReturnType.EXIT, mana);
         }
         mana += inst.run(stack, con);    
+        if (mana >= con.mana) {
+          con.player.damage((double)(mana - con.mana), con.player);
+          break;
+        }
       }
     } catch (Exception e) {
       con.player.sendMessage("Error: " + e.getMessage());
