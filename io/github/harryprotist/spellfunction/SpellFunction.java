@@ -9,6 +9,7 @@ import java.util.HashSet;
 import org.bukkit.*;
 import org.bukkit.util.*;
 import org.bukkit.material.*;
+import org.bukkit.block.*;
 
 import io.github.harryprotist.spellfunction.*;
 import io.github.harryprotist.*;
@@ -31,17 +32,17 @@ public abstract class SpellFunction {
     throw new Exception("Function Error: Function \"" + name + "\" not found!");
   }
 
-  public abstract int run(Stack<SpellObject> stack, SpellContext con) throws Exception;
+  public abstract void run(SpellContext con) throws Exception;
+  public abstract int cost(SpellContext con);
 
   public static class SfNumber extends SpellFunction {
     private Integer num;
     public SfNumber(Integer num) {
       this.num = num;
     }
-    public int run(Stack<SpellObject> stack, SpellContext con) 
-    throws Exception {
-      stack.push(new SpellObject.SpNumber(num));
-      return 1;
+    public int cost(SpellContext con) { return 1; }
+    public void run(SpellContext con) throws Exception {
+      con.stack.push(new SpellObject.SpNumber(num));
     }
   }
   public static class SfString extends SpellFunction {
@@ -49,10 +50,10 @@ public abstract class SpellFunction {
     public SfString(String str) {
       this.str = str;
     }
-    public int run(Stack<SpellObject> stack, SpellContext con)
+    public int cost(SpellContext con) { return 1; }
+    public void run(SpellContext con)
     throws Exception {
-      stack.push(new SpellObject.SpString(str));
-      return 1;
+      con.stack.push(new SpellObject.SpString(str));
     }
   }
   public static class SfSpell extends SpellFunction {
@@ -60,94 +61,87 @@ public abstract class SpellFunction {
     public SfSpell(Spell spell) {
       this.spell = spell;
     }
-    public int run(Stack<SpellObject> stack, SpellContext con)
-    throws Exception {
-      stack.push(new SpellObject.SpSpell(spell));
-      return 1;
+    public int cost(SpellContext con) { return 1; }
+    public void run(SpellContext con) throws Exception {
+      con.stack.push(new SpellObject.SpSpell(spell));
     }
   }
 
   @SpellFun(name = "exit")
   public static class SfExit extends SpellFunction {
-    public int run(Stack<SpellObject> stack, SpellContext con)
-    throws Exception {
-      return 0;
-    } 
+    public int cost(SpellContext con) { return 0; }
+    public void run(SpellContext con) throws Exception {} 
   }
 
   @SpellFun(name = "dup")
   public static class Dup extends SpellFunction {
-    public int run(Stack<SpellObject> stack, SpellContext con)
-    throws Exception {
-      SpellObject so = stack.pop();
-      stack.push(so);
-      stack.push(so);
-      return 1;
+    public int cost(SpellContext con) { return 1; }
+    public void run(SpellContext con) throws Exception {
+      SpellObject so = con.stack.pop();
+      con.stack.push(so);
+      con.stack.push(so);
     }
   }
   
   @SpellFun(name = "add")
   public static class Add extends SpellFunction {
-    public int run(Stack<SpellObject> stack, SpellContext con)
-    throws Exception {
-      SpellObject so2 = stack.pop();
-      SpellObject so1 = stack.pop();
-      System.out.println(so1.getValue() == null);
+    public int cost(SpellContext con) { return 1; }
+    public void run(SpellContext con) throws Exception {
+      SpellObject so2 = con.stack.pop();
+      SpellObject so1 = con.stack.pop();
       if (so1.getType() == SpellObject.Type.NUMBER &&
           so2.getType() == SpellObject.Type.NUMBER) {
-        stack.push(new SpellObject.SpNumber(
+        con.stack.push(new SpellObject.SpNumber(
           (Integer)so1.getValue() + (Integer)so2.getValue())
         );
       } else if (so1.getType() == SpellObject.Type.STRING &&
                  so2.getType() == SpellObject.Type.STRING) {
-        stack.push(new SpellObject.SpString((String)so1.getValue() + (String)so2.getValue()));
+        con.stack.push(new SpellObject.SpString(
+          (String)so1.getValue() + (String)so2.getValue())
+        );
       } else {
         throw new Exception("Add: Improper types");
       }
-      return 1;
     }
   }
 
   @SpellFun(name = "neg")
   public static class Neg extends SpellFunction {
-    public int run(Stack<SpellObject> stack, SpellContext con)
-    throws Exception {
-      SpellObject so = stack.pop();
+    public int cost(SpellContext con) { return 1; }
+    public void run(SpellContext con) throws Exception {
+      SpellObject so = con.stack.pop();
       if (so.getType() == SpellObject.Type.NUMBER) {
-        stack.push(new SpellObject.SpNumber((Integer)so.getValue() * (-1)));
+        con.stack.push(new SpellObject.SpNumber((Integer)so.getValue() * (-1)));
       } else {
         throw new Exception("Neg: Improper type"); 
       }
-      return 1;
     }
   }
 
   @SpellFun(name = "log")
   public static class Log extends SpellFunction {
-    public int run(Stack<SpellObject> stack, SpellContext con)
-    throws Exception {
-      con.player.sendMessage(stack.pop().getValue().toString());
-      return 1;
+    public int cost(SpellContext con) { return 1; }
+    public void run(SpellContext con) throws Exception {
+      con.player.sendMessage(con.stack.pop().getValue().toString());
     }
   } 
 
   @SpellFun(name = "target")
   public static class Target extends SpellFunction {
-    public int run(Stack<SpellObject> stack, SpellContext con)
-    throws Exception {
-      SpellObject so = stack.pop();
+    public int cost(SpellContext con) { return 15; }
+    public void run(SpellContext con) throws Exception {
+      SpellObject so = con.stack.pop();
       if (so.getType() == SpellObject.Type.NUMBER) {
 
         Set<Material> transparent = new HashSet<Material>();
         transparent.add(Material.AIR);
 
-        stack.push( new SpellObject.SpLocation(
+        con.stack.push( new SpellObject.SpLocation(
           con.player.getTargetBlock(
             transparent,
             ((Integer)so.getValue())
           ).getLocation()
         ));
-        return ((Integer)so.getValue() / 10) + 1;
       } else {
         throw new Exception("Target: Improper type");
       }
@@ -156,10 +150,12 @@ public abstract class SpellFunction {
 
   @SpellFun(name = "arrow")
   public static class Arrow extends SpellFunction {
-    public int run(Stack<SpellObject> stack, SpellContext con)
-    throws Exception {
-      SpellObject pow = stack.pop(); 
-      SpellObject loc = stack.pop(); 
+    public int cost(SpellContext con) {
+      return (64 + (Integer)con.stack.peek().getValue());
+    }
+    public void run(SpellContext con) throws Exception {
+      SpellObject pow = con.stack.pop(); 
+      SpellObject loc = con.stack.pop(); 
       if (pow.getType() == SpellObject.Type.NUMBER &&
       loc.getType() == SpellObject.Type.LOCATION) {
 
@@ -184,7 +180,6 @@ public abstract class SpellFunction {
           (float)((Integer)pow.getValue() / 10),
           spread
         );
-        return (64 + (Integer)pow.getValue());
       } else {
         throw new Exception("Arrow: Improper types");          
       }
@@ -193,33 +188,102 @@ public abstract class SpellFunction {
 
   @SpellFun(name = "if")
   public static class If extends SpellFunction {
-    public int run(Stack<SpellObject> stack, SpellContext con)
-    throws Exception {
-      SpellObject code = stack.pop();
-      SpellObject expr = stack.pop();
+    public int cost(SpellContext con) { return 1; }
+    public void run(SpellContext con) throws Exception {
+      SpellObject code = con.stack.pop();
+      SpellObject expr = con.stack.pop();
 
       if (code.getType() == SpellObject.Type.SPELL &&
       expr.getType() == SpellObject.Type.NUMBER &&
-      (Integer)(expr.getValue()) != 0) {
-        con.stack = stack;
-        return ((Spell)(code.getValue())).run(con).mana;
+      (Integer)(expr.getValue()) != 0 &&
+      (((Spell)(code.getValue())).run(con).type
+      == Spell.ReturnType.EXIT)) {
+        throw new Exception("EXIT");    
       }
-      return 1;
     }
   }
 
   @SpellFun(name = "equals")
   public static class Equals extends SpellFunction {
-    public int run(Stack<SpellObject> stack, SpellContext con)
-    throws Exception {
-      SpellObject so2 = stack.pop();
-      SpellObject so1 = stack.pop();
+    public int cost(SpellContext con) { return 1; }
+    public void run(SpellContext con) throws Exception {
+      SpellObject so2 = con.stack.pop();
+      SpellObject so1 = con.stack.pop();
       if (so1.getValue().equals(so2.getValue())) {
-        stack.push(new SpellObject.SpNumber(1));
+        con.stack.push(new SpellObject.SpNumber(1));
       } else {
-        stack.push(new SpellObject.SpNumber(0));
+        con.stack.push(new SpellObject.SpNumber(0));
       }
-      return 1;
     }
   } 
+
+  @SpellFun(name = "shift")
+  public static class Shift extends SpellFunction {
+    public int cost(SpellContext con) { return 1; }
+    public void run(SpellContext con) throws Exception {
+      int dist = (Integer)(con.stack.pop().getValue()); 
+      String dir = (String)(con.stack.pop().getValue());
+      Location loc = (Location)(con.stack.pop().getValue());
+      int forward = 0, right = 0, up = 0;
+      switch (dir) {
+        case "forward": forward = dist; break;
+        case "back": forward = -dist; break;
+        case "left": right = -dist; break;
+        case "right": right = dist; break;
+        case "up": up = dist; break;
+        case "down": up = -dist; break;
+      }
+      double x, z;
+      Vector v = con.player.getLocation().getDirection().normalize();
+      if (Math.abs(v.getX()) > Math.abs(v.getZ())) {
+        if (v.getX() > 0) {
+          x = forward;
+          z = right;
+        } else {
+          x = -forward;
+          z = -right;
+        }
+      } else {
+        if (v.getZ() > 0) {
+          x = -right; 
+          z = forward;
+        } else {
+          x = right;
+          z = -forward;
+        }
+      }
+      loc.add(x, up, z);
+      con.stack.push(new SpellObject.SpLocation(loc));
+    } 
+  }
+
+  @SpellFun(name = "break")
+  public static class Break extends SpellFunction {
+    public int cost(SpellContext con) {
+      return con.player.getWorld()
+        .getBlockAt((Location)(con.stack.peek().getValue()))
+        .getType()
+        .getMaxDurability();
+    }
+    public void run(SpellContext con) {
+      Location loc = (Location)(con.stack.pop().getValue());
+      Block block = con.player.getWorld().getBlockAt(loc);
+      if (block.getType() != Material.BEDROCK) {
+        block.breakNaturally(); 
+      }
+    }
+  }
+
+  @SpellFun(name = "loop")
+  public static class Loop extends SpellFunction {
+    public int cost(SpellContext con) { return 1; }
+    public void run(SpellContext con) throws Exception {
+      SpellObject code = con.stack.pop();
+
+      if (code.getType() == SpellObject.Type.SPELL) {
+        while (((Spell)(code.getValue())).run(con).type 
+          != Spell.ReturnType.EXIT) {}
+      }
+    }
+  }
 }

@@ -52,12 +52,13 @@ public class Casting implements Listener {
       if (pages.equals(code)) return;
 
       try {
-        int cost = Book.parse(code).run(new SpellContext(plugin, player)).mana;
+        int remaining = Book.parse(code).run(new SpellContext(plugin, player)).con.mana;
         plugin.setMeta(player, "mana",
-          new Integer((Integer)(plugin.getMeta(player, "mana")) - cost)
+          new Integer(remaining)
         );
       } catch (Exception e) {
-        player.sendMessage("Parse Error: " + e.getMessage());
+        player.sendMessage("Parse Error: " + e.printStackTrace());
+        //e.printStackTrace(System.out);
       }
     }
   }

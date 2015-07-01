@@ -18,10 +18,10 @@ public class Spell {
 
   public static class SpellReturn {
     public ReturnType type;
-    public int mana;
-    public SpellReturn(ReturnType type, int mana) {
+    public SpellContext con;
+    public SpellReturn(ReturnType type, SpellContext con) {
       this.type = type;
-      this.mana = mana;
+      this.con = con;
     }
   }
 
@@ -32,25 +32,35 @@ public class Spell {
   
   public SpellReturn run(SpellContext con) {
 
-    int mana = 0;
-    Stack<SpellObject> stack = con.stack;
+    SpellReturn ret = new SpellReturn(ReturnType.END, con);
 
     try {
       for (SpellFunction inst : program) {
         if (inst instanceof SpellFunction.SfExit) {
-          return new SpellReturn(ReturnType.EXIT, mana);
-        }
-        mana += inst.run(stack, con);    
-        if (mana >= con.mana) {
-          con.player.damage((double)(mana - con.mana), con.player);
+          ret.type = ReturnType.EXIT; 
           break;
         }
+        con.mana -= inst.cost(con);
+        if (con.mana <= 0) {
+          con.player.damage((double)(con.mana * (-1)), con.player);
+          if (con.player.getHealth() > 0) {
+            inst.run(con);
+          }
+          con.mana = 0;
+          break;
+        }
+        inst.run(con);
       }
     } catch (Exception e) {
-      con.player.sendMessage("Error: " + e.getMessage());
-      return new SpellReturn(ReturnType.ERROR, mana);
+      if (e.getMessage().equals("EXIT")) {
+        ret.type = ReturnType.EXIT;
+      } else {
+        con.player.sendMessage("Error: " + e.getMessage());
+        ret.type = ReturnType.ERROR;
+      }
     }
-    return new SpellReturn(ReturnType.END, mana);
+
+    return ret;
   }
 
 }

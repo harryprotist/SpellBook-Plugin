@@ -30,16 +30,20 @@ public class Book {
   private static Spell parseLines(String[] lines) throws Exception {
     Spell program = new Spell();
     for (int i = 0, j = 0; i < lines.length; i++) {
-
       if (lines[i].length() > 0 && lines[i].equals("open")) {
-        for (j = i; j < lines.length; j++) {
-          if (lines[j].equals("close")) break;
+        int opens = 1;
+        for (j = i + 1; j < lines.length; j++) {
+          if (lines[j].equals("open")) opens++;
+          if (lines[j].equals("close")) {
+            if (opens <= 1) break;
+            opens--;
+          }
         }
-        if (j == i) throw new Exception("Unclosed \'open\'");
+        if (j == lines.length) throw new Exception("Unclosed \'open\'");
         program.add(new SpellFunction.SfSpell(
           parseLines(Arrays.copyOfRange(lines, (i + 1), j))
         ));
-        i = (j + 1);
+        i = j;
       } else {
         program.add(parseLine(lines[i].trim()));
       }
