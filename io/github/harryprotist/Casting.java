@@ -57,7 +57,7 @@ public class Casting implements Listener {
           new Integer(remaining)
         );
       } catch (Exception e) {
-        player.sendMessage("Parse Error: " + e.printStackTrace());
+        player.sendMessage("Parse Error: " + e.getMessage());
         //e.printStackTrace(System.out);
       }
     }

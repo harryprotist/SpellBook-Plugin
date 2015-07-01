@@ -30,7 +30,8 @@ public class Book {
   private static Spell parseLines(String[] lines) throws Exception {
     Spell program = new Spell();
     for (int i = 0, j = 0; i < lines.length; i++) {
-      if (lines[i].length() > 0 && lines[i].equals("open")) {
+      if (lines[i].length() == 0) continue;
+      if (lines[i].equals("open")) {
         int opens = 1;
         for (j = i + 1; j < lines.length; j++) {
           if (lines[j].equals("open")) opens++;

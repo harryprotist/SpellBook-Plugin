@@ -286,4 +286,23 @@ public abstract class SpellFunction {
       }
     }
   }
+
+  @SpellFun(name = "drop")
+  public static class Drop extends SpellFunction {
+    public int cost(SpellContext con) { return 1; }
+    public void run(SpellContext con) throws Exception {
+      con.stack.pop();
+    }
+  } 
+
+  @SpellFun(name = "swap")
+  public static class Swap extends SpellFunction {
+    public int cost(SpellContext con) { return 1; }
+    public void run(SpellContext con) throws Exception {
+      SpellObject a = con.stack.pop();
+      SpellObject b = con.stack.pop();
+      con.stack.push(a);
+      con.stack.push(b);
+    }
+  } 
 }
